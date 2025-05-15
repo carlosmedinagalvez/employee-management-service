@@ -1,0 +1,33 @@
+server:
+  port: 9001
+springdoc:
+  swagger-ui:
+    path: /swagger-ui-custom.html
+spring:
+  application:
+    name: employee-management-service
+  datasource:
+    url: jdbc:h2:file:~/data/employees;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=4;MODE=Oracle
+    username: sa
+    password: 
+    driverClassName: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console.enabled: true
+    console.path: /h2-console
+    console.settings.trace: false 
+    console.settings.web-allow-others: false
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+  file:
+    name: logs/spring-boot-application.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
