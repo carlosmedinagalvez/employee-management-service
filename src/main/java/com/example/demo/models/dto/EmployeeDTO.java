@@ -40,7 +40,7 @@ public class EmployeeDTO implements Serializable {
 	@NotBlank(message = "The Maternal Last Name is required.")
 	private String maternalLastName;
 	
-	@NotBlank(message = "The age is required.")
+	@NotNull(message = "The age is required.")
 	private Integer age;
 	
 	@NotBlank(message = "The gender is required, must enter the values ​​Male, Female, or Other.")
