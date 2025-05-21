@@ -139,7 +139,7 @@ public class EmployeeController {
 			@ApiResponse(responseCode = "400", description = "Invalid id supplied", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Id not found", content = @Content) })
 	@PatchMapping(path = "/employee/{id}")
-	public ResponseEntity<EmployeeDTO> patchEmployee(@PathVariable Long id, @RequestBody EmployeeDTO request) {
+	public ResponseEntity<EmployeeDTO> patchEmployee(@PathVariable Long id, @Valid @RequestBody EmployeeDTO request) {
 		EmployeeDTO employeeDTO = new EmployeeDTO();
 		try {
 			employeeDTO = iEmployeeService.updateEmployee(id, request);
