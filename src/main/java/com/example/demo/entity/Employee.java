@@ -13,19 +13,21 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * C
+ * Employee class represents the data model for employee
  * 
  * @author Daniel Manzano Borja
- * @since 14-MAY-2025	
+ * @since 21-MAY-2025	
  *
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "employee")
 public class Employee implements Serializable {
@@ -34,7 +36,7 @@ public class Employee implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id;
 	
 	@Column(name="firstName")
 	private String firstName;

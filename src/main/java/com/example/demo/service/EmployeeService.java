@@ -3,150 +3,153 @@
  */
 package com.example.demo.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.Employee;
+import com.example.demo.exceptions.EmployeeNotFoundException;
+import com.example.demo.mapper.IEmployeeMapper;
 import com.example.demo.models.dto.EmployeeDTO;
 import com.example.demo.repository.IEmployeeRepository;
-import com.example.demo.util.IEmployeeMapper;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service class where the business methods of employee operations are
  * implemented.
  *
  * @author Daniel Manzano Borja
- * @since 14-MAY-2025
+ * @since 21-MAY-2025
  */
 @Service
+@Slf4j
 public class EmployeeService implements IEmployeeService {
-	
+
 	private IEmployeeRepository iEmployeeRepository;
+	private IAuditLogService iAuditLogService;
 	private IEmployeeMapper iEmployeeMapper;
 
 	/**
-	 * Constructor that injects the iEmployeeRepository, IEmployeeMapper interfaces.
+	 * Constructor that injects the iEmployeeRepository, iEventLogRepository and
+	 * IEmployeeMapper interfaces.
 	 * 
-	 * @param iUserRepository    | JPA-interface that contains the full API of CRUD Repository.
-	 * @param iEmployeeMapper | Interface that activates the generation of a
-	 *                        implementation of that type via MapStruct.
+	 * @param iEmployeeRepository | JPA-interface that contains the full API of
+	 *                            employee CRUD Repository.
+	 * @param iAuditLogService    | Service that saves the event to the audit log.
+	 * @param iEmployeeMapper     | Activates the generation of a implementation of
+	 *                            that type via MapStruct.
 	 */
-	public EmployeeService(IEmployeeRepository iEmployeeRepository, IEmployeeMapper iEmployeeMapper) {
+	public EmployeeService(IEmployeeRepository iEmployeeRepository, IAuditLogService iAuditLogService,
+			IEmployeeMapper iEmployeeMapper) {
 		this.iEmployeeRepository = iEmployeeRepository;
+		this.iAuditLogService = iAuditLogService;
 		this.iEmployeeMapper = iEmployeeMapper;
 	}
 
 	/**
-	 * Method getting a list of all existing employees.
+	 * Method getting a list of all existing employees. Record the event
+	 * successfully or unsuccessfully in the audit log.
 	 * 
 	 * @return List<{@link EmployeeDTO}> | employee list.
 	 */
 	@Override
 	public List<EmployeeDTO> getAllEmployees() {
-		List<EmployeeDTO> resultList = new ArrayList<EmployeeDTO>();
+		log.info("Fetching all employees...");
 		List<Employee> entityList = iEmployeeRepository.findAll();
-		iEmployeeMapper.updateDtoFromUserEntityList(entityList, resultList);
-		return resultList;
+		if (entityList.isEmpty()) {
+			iAuditLogService.auditLog("LISTING_FAILED", "No employees found");
+			throw new NoSuchElementException("No employees found");
+		}
+		iAuditLogService.auditLog("LISTING", "Employees retrieved successfully");
+		return entityList.stream().map(iEmployeeMapper::updateDtoFromEmployeeEntity).toList();
 	}
 
 	/**
-	 * Method that get a employee by id.
+	 * Method that obtains an employee by ID. Record the event successfully or
+	 * unsuccessfully in the audit log.
 	 * 
-	 * @param id | employee Id.
-	 * @return {@link Employee} | employee object response.
+	 * @param id | employee ID.
+	 * @return {@link EmployeeDTO} | result object response.
 	 */
 	@Override
 	public EmployeeDTO getEmployeeById(Long id) {
-		EmployeeDTO result = new EmployeeDTO();
-		Employee entity = new Employee();
-		Optional<Employee> opt = iEmployeeRepository.findById(id);
-		if (opt.isPresent()) {
-			entity = opt.get();
-		}
-		iEmployeeMapper.updateDtoFromEmployeeEntity(entity, result);
+		log.info("Searching for employee with ID: {}...", id);
+		Employee entity = iEmployeeRepository.findById(id).orElseThrow(() -> {
+			log.warn("Employee ID {} not found", id);
+			iAuditLogService.auditLog("QUERY_FAILED", "Attempt to query employee not found " + id);
+			return new EmployeeNotFoundException(id);
+		});
+		EmployeeDTO result = iEmployeeMapper.updateDtoFromEmployeeEntity(entity);
+		iAuditLogService.auditLog("QUERY", "Employee query by ID: " + id);
 		return result;
 	}
 
 	/**
-	 * Method that inserts one or more employees in a single request.
+	 * Method that inserts one or more employees in a single request. Record the
+	 * event successfully or unsuccessfully in the audit log.
 	 * 
 	 * @param {@link List<EmployeeDTO>} | employeeDTO list.
 	 * @return {@link List<EmployeeDTO>} | employeeDTO list.
 	 */
 	@Override
 	public List<EmployeeDTO> saveEmployees(List<EmployeeDTO> employeeDTOList) {
-		List<EmployeeDTO> resultList = new ArrayList<EmployeeDTO>();
-		List<Employee> employeeEntityList = new ArrayList<Employee>();
-		iEmployeeMapper.updateEntityFromEmployeeDtoList(employeeDTOList, employeeEntityList);
-		List<Employee> entityList = iEmployeeRepository.saveAll(employeeEntityList);
-		if (!entityList.isEmpty()) {
-			iEmployeeMapper.updateDtoFromUserEntityList(entityList, resultList);
+		try {
+			List<Employee> employees = employeeDTOList.stream().map(iEmployeeMapper::updateEntityFromEmployeeDto)
+					.collect(Collectors.toList());
+			List<Employee> savedEntityList = iEmployeeRepository.saveAll(employees);
+			if (!savedEntityList.isEmpty()) {
+				for (Employee employee : savedEntityList) {
+					iAuditLogService.auditLog("CREATION", "Employee created by ID: " + employee.getId());
+				}
+			}
+			return savedEntityList.stream().map(iEmployeeMapper::updateDtoFromEmployeeEntity).toList();
+		} catch (Exception ex) {
+			iAuditLogService.auditLog("CREATION_FAILED", "Failed to save employees: " + ex.getMessage());
+			throw new RuntimeException("Unable to save employees", ex);
 		}
-		return resultList;
-
 	}
 
 	/**
-	 * Method to partially update an employee.
+	 * Method to partially update an employee. Record the event successfully or
+	 * unsuccessfully in the audit log.
 	 * 
-	 * @param {id} | Employee ID
+	 * @param {id}   | Employee ID
 	 * @param {@link EmployeeDTO} | employeeDTO object request.
 	 * @return {@link EmployeeDTO} | employeeDTO object response.
 	 */
 	@Override
-	public EmployeeDTO updateEmployee(Long id, EmployeeDTO employeeDTO) {
-		Employee entityEmployee = iEmployeeRepository.findById(id).orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
-		setEmployeePatch(employeeDTO, entityEmployee);
-		EmployeeDTO result = new EmployeeDTO();
-		Employee entity = new Employee();
-		entity = iEmployeeRepository.save(entityEmployee);
-		iEmployeeMapper.updateDtoFromEmployeeEntity(entity, result);
-		return result;
+	public EmployeeDTO partialEmployeeUpdate(Long id, EmployeeDTO employeeDTO) {
+		try {
+			Employee existing = iEmployeeRepository.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
+			iEmployeeMapper.updateEntityFromEmployeeDto(employeeDTO, existing);
+			Employee updated = iEmployeeRepository.save(existing);
+			iAuditLogService.auditLog("UPDATE", "Updated employee with ID: " + id);
+			return iEmployeeMapper.updateDtoFromEmployeeEntity(updated);
+		} catch (NoSuchElementException e) {
+			iAuditLogService.auditLog("UPDATE_FAILED",
+					"Failed to update employee with ID: " + id + " - " + e.getMessage());
+			throw e;
+		} catch (Exception ex) {
+			iAuditLogService.auditLog("UPDATE_FAILED", "Unexpected error: " + ex.getMessage());
+			throw ex;
+		}
 	}
-	
-	private void setEmployeePatch(EmployeeDTO employeeDTO, Employee entityEmployee) {
-		if(employeeDTO.getAge() != null) {
-			entityEmployee.setAge(employeeDTO.getAge());
-        }
-        if(employeeDTO.getDateOfBirth() != null) {
-        	entityEmployee.setDateOfBirth(employeeDTO.getDateOfBirth());
-        }
-        
-        if(employeeDTO.getFirstName() != null) {
-			entityEmployee.setFirstName(employeeDTO.getFirstName());
-        }
-        if(employeeDTO.getGender() != null) {
-        	entityEmployee.setGender(employeeDTO.getGender());
-        }
-        
-        if(employeeDTO.getMaternalLastName() != null) {
-			entityEmployee.setMaternalLastName(employeeDTO.getMaternalLastName());
-        }
-        if(employeeDTO.getPaternalLastName() != null) {
-        	entityEmployee.setPaternalLastName(employeeDTO.getPaternalLastName());
-        }
-        
-        if(employeeDTO.getPosition() != null) {
-			entityEmployee.setPosition(employeeDTO.getPosition());
-        }
-        if(employeeDTO.getSecondName() != null) {
-        	entityEmployee.setSecondName(employeeDTO.getSecondName());
-        }
-	}
-	
-	
+
 	/**
-	 * Method that delete an employee by id.
+	 * Method that delete an employee by id. Record the event successfully or
+	 * unsuccessfully in the audit log.
 	 * 
-	 * @param {@link EmployeeDTO} | Object employeeDTO.
-	 * @return {@link Employee} | employee object response.
+	 * @param {id} | Employee ID
+	 * @return boolean
 	 */
 	public boolean deleteEmployee(Long id) {
+		log.info("Deleting employee with ID {}", id);
 		return iEmployeeRepository.findById(id).map(user -> {
 			iEmployeeRepository.delete(user);
+			iAuditLogService.auditLog("DELETION", "Deleted employee by ID: " + id);
 			return true;
 		}).orElse(false);
 	}

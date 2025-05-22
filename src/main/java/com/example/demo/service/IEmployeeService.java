@@ -13,7 +13,7 @@ import com.example.demo.models.dto.EmployeeDTO;
  * Interface where the signature of the business methods are declared.
  * 
  * @author Daniel Manzano Borja
- * @since 12-MAY-2025
+ * @since 21-MAY-2025
  * 
  */
 @Component
@@ -27,18 +27,18 @@ public interface IEmployeeService {
 	List<EmployeeDTO> getAllEmployees();
 	
 	/**
-	 * Method that get a employee by id.
+	 * Method that obtains an employee by ID.
 	 * 
-	 * @param id | employee Id.
-	 * @return {@link EmployeeDTO} | employee object response.
+	 * @param id | employee ID.
+	 * @return {@link EmployeeDTO} | result object response.
 	 */
 	EmployeeDTO getEmployeeById(Long id);
 	
 	/**
-	 * Method that save a new employee.
+	 * Method that inserts one or more employees in a single request.
 	 * 
-	 * @param {@link EmployeeDTO} | Object employeeDTO.
-	 * @return {@link EmployeeDTO} | employee object response.
+	 * @param {@link List<EmployeeDTO>} | employeeDTO list.
+	 * @return {@link List<EmployeeDTO>} | employeeDTO list.
 	 */
 	List<EmployeeDTO> saveEmployees(List<EmployeeDTO> employeeDTOList);
 	
@@ -49,13 +49,13 @@ public interface IEmployeeService {
 	 * @param {@link EmployeeDTO} | employeeDTO object request.
 	 * @return {@link EmployeeDTO} | employeeDTO object response.
 	 */
-	EmployeeDTO updateEmployee(Long id, EmployeeDTO employeeDto);
+	EmployeeDTO partialEmployeeUpdate(Long id, EmployeeDTO employeeDto);
 	
 	/**
 	 * Method that delete an employee by id.
 	 * 
 	 * @param {id} | Employee ID
-	 * @return void
+	 * @return boolean
 	 */
 	boolean deleteEmployee(Long id);
 

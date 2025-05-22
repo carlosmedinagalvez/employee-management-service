@@ -5,7 +5,6 @@ package com.example.demo.controller;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.models.dto.EmployeeDTO;
 import com.example.demo.service.IEmployeeService;
 
@@ -38,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  * preparing a model, and returning the view to be rendered as a response.
  * 
  * @author Daniel Manzano Borja
- * @since 14/05/2025
+ * @since 21/05/2025
  * 
  */
 @RestController
@@ -65,93 +63,65 @@ public class EmployeeController {
 	 * @return {@link ResponseEntity<EmployeeDTO>} | employee object response.
 	 * 
 	 */
-	@Operation(summary = "Get employee by id")
+	@Operation(summary = "Get employee by ID", description = "Returns a specific employee by ID")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Employee found", content = {
 			@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = EmployeeDTO.class)) }),
 			@ApiResponse(responseCode = "400", description = "Invalid employee supplied", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Employee not found", content = @Content) })
 	@GetMapping(path = "/employee/{id}")
 	public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Long id) {
-		EmployeeDTO employeeDto = new EmployeeDTO();
-		try {
-			employeeDto = iEmployeeService.getEmployeeById(id);
-			if (employeeDto.getId() != 0) {
-				return new ResponseEntity<>(employeeDto, HttpStatus.OK);
-			} else {
-				return new ResponseEntity<>(employeeDto, HttpStatus.NOT_FOUND);
-			}
-		} catch (Exception ex) {
-			log.error("employee-service: ERROR - |{}", ex);
-			throw new ResourceNotFoundException("Error: " + HttpStatus.INTERNAL_SERVER_ERROR + ex);
-		}
+			return new ResponseEntity<>(iEmployeeService.getEmployeeById(id), HttpStatus.OK);
 	}
 
-	
+
 	/**
-	 * Method getting a list of all existing employees.
-	 * 
-	 * @return List<{@link EmployeeDTO}> | employee list.
+	 * Method getting the list of all existing employees.
+	 * @return  ResponseEntity<List<{@link EmployeeDTO}>> | employee list.
 	 */
-	@Operation(summary = "Get all employees")
+	@Operation(summary = "List employees", description = "Returns all employees")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Employee list found", content = {
 			@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = EmployeeDTO.class)) }),
 			@ApiResponse(responseCode = "204", description = "No content", content = @Content) })
 	@GetMapping(path = "/employees")
 	public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
-		List<EmployeeDTO> employeeDTOList = new ArrayList<EmployeeDTO>();
-		try {
-			employeeDTOList = iEmployeeService.getAllEmployees();
-			if (!employeeDTOList.isEmpty()) {
-				return new ResponseEntity<>(employeeDTOList, HttpStatus.OK);
-			} else {
-				return new ResponseEntity<>(employeeDTOList, HttpStatus.NO_CONTENT);
-			}
-		} catch (Exception ex) {
-			log.error("employee-service: ERROR - |{}", ex);
-			throw new ResourceNotFoundException("Error: " + HttpStatus.INTERNAL_SERVER_ERROR + ex);
+		List<EmployeeDTO> employeeDTOList = iEmployeeService.getAllEmployees();
+		if (employeeDTOList.isEmpty()) {
+			return new ResponseEntity<>(employeeDTOList, HttpStatus.NO_CONTENT);
 		}
+		return new ResponseEntity<>(employeeDTOList, HttpStatus.OK);
 	}
 
-	
-	@Operation(summary = "Inserts one or more employees")
-	@ApiResponse(responseCode = "201", description = "Saved employees", content = {
+	/**
+	 * Method to create one or more employees.
+	 * @param List<{@link EmployeeDTO}> | Employee list request.
+	 * @return List<{@link EmployeeDTO}> | List of employees created.
+	 */
+	@Operation(summary = "Create employees", description = "Create one or more employees")
+	@ApiResponse(responseCode = "201", description = "Employee or employees created successfully", content = {
 			@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = EmployeeDTO.class)) })
 	@PostMapping(path = "/employees", consumes = APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<EmployeeDTO>> saveEmployees(@Valid @RequestBody List<EmployeeDTO> requestList) {
-		List<EmployeeDTO> employeeDtoList = new ArrayList<EmployeeDTO>();
-		try {
-			employeeDtoList = iEmployeeService.saveEmployees(requestList);
-			if (!employeeDtoList.isEmpty()) {
-				return new ResponseEntity<>(employeeDtoList, HttpStatus.CREATED);
-			} else {
-				return new ResponseEntity<>(employeeDtoList, HttpStatus.NOT_FOUND);
-			}
-		} catch (Exception ex) {
-			log.error("employee-service: ERROR - |{}", ex);
-			throw new ResourceNotFoundException("Error: " + HttpStatus.INTERNAL_SERVER_ERROR + ex);
+	public ResponseEntity<List<EmployeeDTO>> saveEmployees(@RequestBody List<@Valid EmployeeDTO> requestList) {
+		List<EmployeeDTO> employeeDtoList = iEmployeeService.saveEmployees(requestList);
+		if (employeeDtoList.isEmpty()) {
+			return new ResponseEntity<>(employeeDtoList, HttpStatus.NOT_FOUND);
 		}
+		return new ResponseEntity<>(employeeDtoList, HttpStatus.CREATED);
 	}
 	
 
-	@Operation(summary = "Partially updates an employee")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated employee", content = {
+	@Operation(summary = "Partially updates an employee", description = "Update any employee data by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated employee successfully", content = {
 			@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = EmployeeDTO.class)) }),
-			@ApiResponse(responseCode = "400", description = "Invalid id supplied", content = @Content),
-			@ApiResponse(responseCode = "404", description = "Id not found", content = @Content) })
+			@ApiResponse(responseCode = "404", description = "Employee ID not found", content = @Content) })
 	@PatchMapping(path = "/employee/{id}")
-	public ResponseEntity<EmployeeDTO> patchEmployee(@PathVariable Long id, @Valid @RequestBody EmployeeDTO request) {
-		EmployeeDTO employeeDTO = new EmployeeDTO();
-		try {
-			employeeDTO = iEmployeeService.updateEmployee(id, request);
-			return new ResponseEntity<>(employeeDTO, HttpStatus.OK);
-		} catch (Exception ex) {
-			log.error("employee-service: ERROR - |{}", ex);
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
+	public ResponseEntity<EmployeeDTO> partialEmployeeUpdate(@PathVariable Long id, @Valid @RequestBody EmployeeDTO request) {
+		EmployeeDTO employeeDTO = iEmployeeService.partialEmployeeUpdate(id, request);
+		return new ResponseEntity<>(employeeDTO, HttpStatus.OK);
 	}
 	
 	
-	@Operation(summary = "Delete an employee by id")
+	@Operation(summary = "Delete employee", description = "Delete an employee by id")
+	@ApiResponse(responseCode = "200", description = "Deleted employee")
 	@DeleteMapping("/employee/{id}")
     public ResponseEntity<String> deleteEmployeeById(@PathVariable Long id) {
 		boolean deleted = iEmployeeService.deleteEmployee(id);

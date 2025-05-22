@@ -2,7 +2,7 @@ server:
   port: 9001
 springdoc:
   swagger-ui:
-    path: /swagger-ui-custom.html
+    path: /swagger-ui.html
 spring:
   application:
     name: employee-management-service
@@ -25,7 +25,7 @@ spring:
 logging:
   level:
     root: INFO
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO
   file:
     name: logs/spring-boot-application.log
   pattern:

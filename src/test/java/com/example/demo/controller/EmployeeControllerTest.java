@@ -4,6 +4,7 @@
 package com.example.demo.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +33,11 @@ class EmployeeControllerTest {
 	@InjectMocks
     private EmployeeController employeeController;
 
-    @Mock
-    private EmployeeService employeeService;
+//    @Mock
+//    private EmployeeService employeeService;
+    
+    private final EmployeeService employeeService = mock(EmployeeService.class);
+    private final EmployeeController controller = new EmployeeController(employeeService);
 	
 	private EmployeeDTO employeeDTO;
 	private EmployeeDTO employeeDTO1;
@@ -42,7 +45,7 @@ class EmployeeControllerTest {
 	@BeforeEach()
 	void init() {
 		
-		employeeDTO = new EmployeeDTO();
+		employeeDTO = new EmployeeDTO(null, null, null, null, null, null, null, null, null);
 		employeeDTO.setFirstName("Esmeralda");
 		employeeDTO.setAge(45);
 		employeeDTO.setDateOfBirth(LocalDate.now());
@@ -53,7 +56,7 @@ class EmployeeControllerTest {
 		employeeDTO.setSecondName("");
 		employeeDTO.setId(1L);
 		
-		employeeDTO1 = new EmployeeDTO();
+		employeeDTO1 = new EmployeeDTO(null, null, null, null, null, null, null, null, null);
 		employeeDTO1.setFirstName("Esmeralda");
 		employeeDTO1.setAge(45);
 		employeeDTO1.setDateOfBirth(LocalDate.now());
@@ -94,13 +97,38 @@ class EmployeeControllerTest {
         assertEquals(employeeList, response.getBody());
     }
 	
+//	@Test
+//    void testUpdateEmployee() {
+//        when(employeeService.updateEmployee(1L, employeeDTO)).thenReturn(employeeDTO);
+//        ResponseEntity<EmployeeDTO> response = employeeController.patchEmployee(1L, employeeDTO);
+//        assertEquals(HttpStatus.OK, response.getStatusCode());
+//        assertEquals(employeeDTO, response.getBody());
+//    }
+	
 	@Test
-    void testUpdateEmployee() {
-        when(employeeService.updateEmployee(1L, employeeDTO)).thenReturn(employeeDTO);
-        ResponseEntity<EmployeeDTO> response = employeeController.patchEmployee(1L, employeeDTO);
+    void testUpdateEmployee_Success() {
+        Long id = 1L;
+
+        EmployeeDTO dto = EmployeeDTO.builder()
+                .firstName("Esmeralda")
+                .secondName("")
+                .paternalLastName("Martinez")
+                .maternalLastName("Escobar")
+                .age(47)
+                .gender("female")
+                .dateOfBirth(LocalDate.now())
+                .position("Fullstack")
+                .build();
+
+        when(employeeService.partialEmployeeUpdate(id, dto)).thenReturn(dto);
+
+        ResponseEntity<EmployeeDTO> response = controller.partialEmployeeUpdate(id, dto);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(employeeDTO, response.getBody());
+        assertEquals("Esmeralda", response.getBody().getFirstName());
+        verify(employeeService).partialEmployeeUpdate(id, dto);
     }
+	
 	
 	@Test
 	void testDeleteEmployee() {
