@@ -1,6 +1,6 @@
 # 📘 Proyecto: API REST con Spring Boot
 
-Este proyecto es una API REST construida con Spring Boot 3. Permite operaciones CRUD sobre una entidad `employee` y registrando los eventos en una entidad `auditlog`, utilizando Spring Data JPA, DTOs para transferencia de datos.
+Este proyecto es una API REST construida con Spring Boot 3. Permite operaciones CRUD sobre una entidad `employee` y registrando los eventos en una entidad `auditlog`, utilizando Spring Data JPA y DTOs para transferencia de datos.
 
 ---
 
@@ -58,17 +58,21 @@ employee-management-service/
 - Base de datos H2 en memoria
 - Bitácora de eventos (acciones exitosas y fallidas)
 - Logging con Lombok (`@Slf4j`)
-- Pruebas unitarias
+- Muestra en el log cualquier header recibido en el request
+- Documentación de contrato
+- Documentación de README
+- OpenAPI 3
+- Pruebas unitarias con Junit 5 y Mockito
 
 ## 📂 API Endpoints
 
-| Method | Endpoint             | Description                                  | State code                    |
-|--------|----------------------|----------------------------------------------|-------------------------------|
-| GET    | `/employees`      | Listar todos los empleados                   | 200 OK / 404 Not Found        |
-| GET    | `/employees/{id}`| Obtener un empleado por ID                   | 200 OK / 404 Not Found        |
-| POST   | `/employees/{id}`| Guardar uno o mas empleados                  | 200 OK / 404 Not Found        |
-| PATCH  | `/employees/{id}`| Actualizar parcialmente un empleado          | 200 OK / 404 Not Found / 400  |
-| DELETE | `/employees/{id}`| Eliminar un empleado por ID                  | 204 No Content / 404 Not Found|
+| Method | Endpoint             | Description                                  | State code                    	|
+|--------|----------------------|----------------------------------------------|--------------------------------|
+| GET    | `/employees`     	| Listar todos los empleados                   | 200 OK / 404 Not Found        	|
+| GET    | `/employees/{id}`| Obtener un empleado por ID                   | 200 OK / 404 Not Found        	|
+| POST   | `/employees/{id}`| Guardar uno o mas empleados                  | 201 CREATED / 404 Not Found		|
+| PATCH  | `/employees/{id}`| Actualizar parcialmente un empleado          | 200 OK / 404 Not Found	        |
+| DELETE | `/employees/{id}`| Eliminar un empleado por ID                  | 200 OK / 404 Not Found			|
 
 ---
 
