@@ -98,3 +98,8 @@ Ejemplo de registros:
 URL: http://localhost:9001/h2-console
 JDBC URL: jdbc:h2:file:~/data/employees;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=4;MODE=Oracle
 
+---
+
+## 🔍 Proyecto en git
+
+https://github.com/dmanzano0418/employee-management-service
