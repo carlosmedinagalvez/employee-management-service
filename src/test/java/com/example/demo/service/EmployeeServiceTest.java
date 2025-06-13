@@ -64,8 +64,7 @@ public class EmployeeServiceTest {
 	@Test
     void testGetEmployeeById_returnsEmployeeDTO() {
         Long id = 1L;
-        Employee employee = new Employee();
-        employee.setId(id);
+        Employee employee = Employee.builder().id(id).build();
         EmployeeDTO dto = new EmployeeDTO();
         dto.setId(id);
 

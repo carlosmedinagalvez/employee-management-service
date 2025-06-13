@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.config.RequestLoggingFilterConfig;
 import com.example.demo.entity.Employee;
 import com.example.demo.exceptions.EmployeeNotFoundException;
 import com.example.demo.mapper.IEmployeeMapper;
@@ -27,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class EmployeeService implements IEmployeeService {
+
+	private static final Logger log = LoggerFactory.getLogger(EmployeeService.class);
 
 	private IEmployeeRepository iEmployeeRepository;
 	private IAuditLogService iAuditLogService;

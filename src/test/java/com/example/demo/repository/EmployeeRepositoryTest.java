@@ -28,12 +28,7 @@ public class EmployeeRepositoryTest {
 
     @Test
     void testSaveAndFindById() {
-    	Employee employee = new Employee();
-        employee.setFirstName("Daniel");
-        employee.setAge(28);
-        employee.setGender("male");
-        employee.setPosition("Engineer");
-
+    	Employee employee = Employee.builder().firstName("Daniel").age(28).gender("male").position("Engineer").build();
         Employee saved = repository.save(employee);
         Optional<Employee> found = repository.findById(saved.getId());
 
@@ -44,17 +39,7 @@ public class EmployeeRepositoryTest {
     @Test
     @DisplayName("Eliminar un empleado por ID")
     void testDeleteById() {
-    	Employee employee = new Employee();
-		employee.setFirstName("Esmeralda");
-		employee.setAge(45);
-		employee.setDateOfBirth(LocalDate.now());
-		employee.setGender("Female");
-		employee.setMaternalLastName("Escobar");
-		employee.setPaternalLastName("Martinez");
-		employee.setPosition("Fullstack");
-		employee.setSecondName("");
-		employee.setId(1L);
-
+    	Employee employee = Employee.builder().firstName("Esmeralda").age(45).dateOfBirth(LocalDate.now()).gender("Female").maternalLastName("Escobar").paternalLastName("Martinez").position("FullStack").secondName("").id(1L).build();
         Employee saved = repository.save(employee);
 
         repository.deleteById(saved.getId());

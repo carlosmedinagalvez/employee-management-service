@@ -1,0 +1,53 @@
+GET /employees
+
+GET /employee/1
+
+POST /employees
+[
+ {
+   "firstName": "Carlos",
+   "secondName": "Ariel",
+   "paternalLastName": "Medina",
+   "maternalLastName": "Galvez",
+   "age": 30,
+   "gender": "male",
+   "dateOfBirth": "01-01-2000",
+   "position": "agent"
+ },
+ {
+   "firstName": "Teresa",
+   "secondName": "",
+   "paternalLastName": "Diaz",
+   "maternalLastName": "Perez",
+   "age": 20,
+   "gender": "female",
+   "dateOfBirth": "01-11-2005",
+   "position": "analyst"
+ },
+ {
+   "firstName": "Peter",
+   "secondName": "Paul",
+   "paternalLastName": "Chavez",
+   "maternalLastName": "Quezada",
+   "age": 29,
+   "gender": "male",
+   "dateOfBirth": "13-09-2003",
+   "position": "agent"
+ }
+]
+
+PATCH /employee/2
+{
+   "firstName": "Teresa",
+   "secondName": "Veronica",
+   "paternalLastName": "Diaz",
+   "maternalLastName": "Perez",
+   "age": 20,
+   "gender": "female",
+   "dateOfBirth": "01-11-2005",
+   "position": "analyst"
+
+}
+
+DELETE /employee/1
+

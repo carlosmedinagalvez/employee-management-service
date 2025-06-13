@@ -7,6 +7,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,7 +29,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controller class where the employee endpoints are declared.
@@ -41,8 +42,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RestController
 @RequestMapping(path = "/api", produces = APPLICATION_JSON_VALUE)
-@Slf4j
 public class EmployeeController {
+	
+	private static final Logger log = LoggerFactory.getLogger(EmployeeController.class);
 	
 	private IEmployeeService iEmployeeService;
 
@@ -70,6 +72,7 @@ public class EmployeeController {
 			@ApiResponse(responseCode = "404", description = "Employee not found", content = @Content) })
 	@GetMapping(path = "/employee/{id}")
 	public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Long id) {
+			log.info("FETCHING EMPLOYEE : " + id);
 			return new ResponseEntity<>(iEmployeeService.getEmployeeById(id), HttpStatus.OK);
 	}
 
